@@ -57,3 +57,10 @@ Les paramètres de connexion PostgreSQL sont lus depuis `.env`, pas écrits dans
 
 Pour démarrer l’ensemble : `docker compose up -d --build`. Pour l’arrêter : `docker compose down`. Le volume persistant est conservé lors de cet arrêt.
 
+## Difficultés rencontrées
+
+- Démarrer Docker Desktop et résoudre les conflits de ports entre les conteneurs.
+- Relier les conteneurs sur les bons réseaux et configurer les identifiants de PostgreSQL.
+- Configurer Apache comme reverse proxy et retrouver son fichier `httpd.conf` depuis Git Bash.
+- Organiser les services avec Docker Compose et vérifier leur état avec les logs et les contrôles de santé.
+
