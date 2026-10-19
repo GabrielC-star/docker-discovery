@@ -10,7 +10,8 @@ services:
       database:
         condition: service_healthy
     networks:
-      - app-network
+      - database-network
+      - proxy-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/actuator/health || exit 1"]
@@ -29,7 +30,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - database-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
@@ -45,7 +46,7 @@ services:
       backend:
         condition: service_healthy
     networks:
-      - app-network
+      - proxy-network
     ports:
       - "8080:80"
     restart: unless-stopped
@@ -58,13 +59,15 @@ services:
     environment:
       ADMINER_DEFAULT_SERVER: database
     networks:
-      - app-network
+      - database-network
     ports:
       - "8081:8080"
     restart: unless-stopped
 
 networks:
-  app-network:
+  database-network:
+    driver: bridge
+  proxy-network:
     driver: bridge
 
 volumes:
