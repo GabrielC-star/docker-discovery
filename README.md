@@ -15,7 +15,7 @@ Commandes utilisées :
 docker network create tp1-network
 docker volume create postgres-data
 docker build -t tp1-db ./Database
-docker run -d --name db --network tp1-network -v postgres-data:/var/lib/postgresql/data tp1-db
+docker run -d --name db --network tp1-network --env-file .env -v postgres-data:/var/lib/postgresql/data tp1-db
 docker exec db pg_isready
 ```
 
@@ -34,4 +34,26 @@ Il présente plusieurs avantages :
 1-5 Why do we need a reverse proxy?
 
 Un reverse proxy reçoit les requêtes des clients et les transmet aux services appropriés, comme le backend. Il fournit un point d’entrée unique, peut répartir le trafic entre plusieurs instances, gérer le HTTPS et ajouter des contrôles de sécurité. Il permet aussi de garder les services internes isolés du réseau public.
+
+1-6 Why is docker-compose so important?
+
+Docker Compose permet de décrire plusieurs conteneurs dans un seul fichier et de les démarrer ensemble. Il configure leurs réseaux, leurs ports et leurs volumes, ce qui rend le lancement du projet plus simple et reproductible.
+
+1-7 Document docker-compose most important commands.
+
+```bash
+docker compose up -d       # Construire si nécessaire et démarrer les services en arrière-plan
+docker compose ps           # Voir l’état des services
+docker compose logs -f      # Suivre les journaux des services
+docker compose build        # Construire ou reconstruire les images
+docker compose down         # Arrêter et supprimer les conteneurs et le réseau du projet
+```
+
+1-8 Document your docker-compose file.
+
+Le fichier `docker-compose.yml` définit quatre services : `database`, `backend`, `httpd` et `adminer`. Compose construit les images de PostgreSQL, du backend et d’Apache depuis leurs dossiers respectifs, puis relie les quatre services au réseau `app-network`. Le backend attend que PostgreSQL soit en bonne santé, puis Apache attend que le backend soit prêt. Adminer attend également PostgreSQL et utilise `database` comme serveur par défaut. Les contrôles de santé vérifient PostgreSQL avec `pg_isready` et l’API avec `/actuator/health`.
+
+Les paramètres de connexion PostgreSQL sont lus depuis `.env`, pas écrits dans le fichier Compose. `.env` est ignoré par Git ; `.env.example` donne les noms des variables à configurer. Pour une nouvelle installation, copie `.env.example` vers `.env` et remplace les valeurs d’exemple. Le volume nommé `postgres-data` conserve les données de la base. Apache publie le port `8080` pour l’API, et Adminer publie le port `8081` pour son interface web. PostgreSQL et le backend ne publient pas directement de ports sur la machine.
+
+Pour démarrer l’ensemble : `docker compose up -d --build`. Pour l’arrêter : `docker compose down`. Le volume persistant est conservé lors de cet arrêt.
 
